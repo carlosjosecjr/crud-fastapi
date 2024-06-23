@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PGDNS="postgresql+psycopg2://postgres:rYSJh5z4@db/short"
+    depends_on:
+      - db
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_DB=short
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=rYSJh5z4
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  alembic:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db/myapp
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      - db
+
+volumes:
+  postgres-data:
